@@ -2,6 +2,12 @@
 
 ## 1. System Design
 
+Core action of the user
+
+- Add a pet
+- Add tasks and priorities
+- view the schedule/daily tasks
+
 **a. Initial design**
 
 - Briefly describe your initial UML design.
