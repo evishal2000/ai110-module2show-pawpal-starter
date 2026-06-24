@@ -14,12 +14,12 @@ classDiagram
         +str title
         +int duration_minutes
         +Priority priority
+        +str pet_name
         +str species_requirement
         +str preferred_time
         +str recurrence
         +is_applicable_to(pet) bool
         +sort_key() tuple
-        +__repr__() str
     }
 
     class Pet {
@@ -27,7 +27,6 @@ classDiagram
         +str species
         +list~str~ preferences
         +add_preference(pref) None
-        +matches(task) bool
     }
 
     class Owner {
@@ -49,22 +48,30 @@ classDiagram
 
     class ScheduledTask {
         +Task task
-        +str start_time
+        +int start_minute
+        +start_time() str
+    }
+
+    class SkippedTask {
+        +Task task
+        +str reason
     }
 
     class DailyPlan {
         +list~ScheduledTask~ scheduled
-        +list~Task~ skipped
+        +list~SkippedTask~ skipped
         +int total_minutes_used
         +to_table() list
         +summary() str
     }
 
     Task --> Priority : has a
+    Task ..> Pet : applies to (by pet_name / species)
     Owner "1" o-- "*" Pet : has many
-    Owner "1" o-- "*" Task : candidate tasks
+    Scheduler "1" o-- "*" Task : candidate tasks
     Scheduler --> Owner : uses
-    Scheduler --> Task : schedules
     Scheduler ..> DailyPlan : produces
     DailyPlan "1" *-- "*" ScheduledTask : contains
+    DailyPlan "1" *-- "*" SkippedTask : contains
     ScheduledTask --> Task : wraps
+    SkippedTask --> Task : wraps

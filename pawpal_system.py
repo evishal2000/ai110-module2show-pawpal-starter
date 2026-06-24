@@ -29,14 +29,17 @@ class Task:
     title: str
     duration_minutes: int
     priority: Priority
+    pet_name: str | None = None  # which pet this task is for (disambiguates multi-pet homes)
     species_requirement: str | None = None
     preferred_time: str | None = None
-    recurrence: str | None = None
+    recurrence: str | None = None  # advisory only in v1 -- not yet resolved against a date
 
     def is_applicable_to(self, pet: "Pet") -> bool:
+        # Single owner of applicability logic: matches by pet_name and/or species_requirement.
         ...
 
     def sort_key(self) -> tuple:
+        # Stable ordering: highest priority first, then shortest duration as tie-breaker.
         ...
 
 
@@ -49,9 +52,6 @@ class Pet:
     preferences: list[str] = field(default_factory=list)
 
     def add_preference(self, pref: str) -> None:
-        ...
-
-    def matches(self, task: "Task") -> bool:
         ...
 
 
@@ -75,7 +75,19 @@ class ScheduledTask:
     """A task that has been placed in the plan at a specific start time."""
 
     task: Task
-    start_time: str
+    start_minute: int  # minutes from midnight; format to a clock string only for display
+
+    def start_time(self) -> str:
+        # Render start_minute as "HH:MM" for display.
+        ...
+
+
+@dataclass
+class SkippedTask:
+    """A task that was left out of the plan, with the reason why."""
+
+    task: Task
+    reason: str
 
 
 @dataclass
@@ -83,7 +95,7 @@ class DailyPlan:
     """The output of the scheduler: chosen tasks, skipped tasks, and totals."""
 
     scheduled: list[ScheduledTask] = field(default_factory=list)
-    skipped: list[Task] = field(default_factory=list)
+    skipped: list[SkippedTask] = field(default_factory=list)
     total_minutes_used: int = 0
 
     def to_table(self) -> list:
